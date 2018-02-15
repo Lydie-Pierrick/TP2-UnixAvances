@@ -1,0 +1,50 @@
+#!/bin/bash
+#
+# Example of how to parse short/long options with 'getopt'
+#
+
+# Option defaults
+
+# getopts string
+# This string needs to be updated with the single character options (e.g. -f)
+opts="cndw:"
+
+COUNT=false;
+WITHOUT_DEPENDANCE=false;
+
+if [ $# -eq 0 ];then
+        echo "filtermod: missing path argument";
+	echo "Please follow usage: filteremod [-c|--count] [-d <nombre>] [--without-dep] [-n|--name <name’>] path";
+	exit 0;
+fi
+
+for pass in 1 2; do
+    while [ -n "$1" ]; do
+        case $1 in
+            --) shift; break;;
+            -*) case $1 in
+                -c|--count)     COUNT=true;;
+                -n|--name)      NAME=$2; shift;;
+                -d|--dependance)      DEPENDANCE=$2; shift;;
+		-w|--without-dep)	WITHOUT_DEPENDANCE=true; shift;;
+                --*)           error $1;;
+                -*)            if [ $pass -eq 1 ]; then ARGS="$ARGS $1";
+                               else error $2; fi;;
+		*) break;
+                esac;;
+            *) PATHS=$1;;
+        esac
+        shift
+    done
+    if [ $pass -eq 1 ]; then ARGS=`getopt $opts $ARGS`
+        if [ $? != 0 ]; then usage; exit 2; fi; set -- $ARGS
+    fi
+done
+
+echo $PATHS
+echo DEPENDANCE=$DEPENDANCE
+echo COUNT=$COUNT
+echo NAME=$NAME
+echo WITHOUT_DEPENDANCE=$WITHOUT_DEPENDANCE
+
+echo `find $PATHS \"*.ko\"`
